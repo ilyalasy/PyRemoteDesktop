@@ -1,0 +1,9 @@
+README.rst
+setup.cfg
+setup.py
+PyScreeze.egg-info/PKG-INFO
+PyScreeze.egg-info/SOURCES.txt
+PyScreeze.egg-info/dependency_links.txt
+PyScreeze.egg-info/requires.txt
+PyScreeze.egg-info/top_level.txt
+pyscreeze/__init__.py

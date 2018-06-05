@@ -1,0 +1,33 @@
+
+ body{
+    background-image:url(/assets/background.png);
+ }
+
+ .header {
+     text-align: center;
+     font-weight: bold;
+     font-size: 30px;
+     color: rgb(0, 0, 0);
+     background: rgba(221, 223, 219, 0.8);
+     border-radius: 10px;
+ }
+
+.center {
+    border: 15px solid black;
+    border-radius: 10px;
+    display: block;
+    margin: auto;
+    width: 85%;
+}
+
+.footer{
+    margin-top: 20px;
+    text-align: center;
+    background: rgba(221, 223, 219, 0.8);
+    border-radius: 10px;
+    
+}
+a > img{
+    display: inline-block;
+    width: 40px;
+}
