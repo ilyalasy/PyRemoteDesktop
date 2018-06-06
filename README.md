@@ -1,7 +1,7 @@
 # PyRemoteDesktop
 Easy tool to control one of your computers on LAN remotely.
 Server part is written on Python3 based on pyautogui and SimpleHttpServer.
-Client part handles pure JS.
+Client part is handled by pure JS.
 # Install
 * Clone or download zip.
 * Run server.py on machine you want to control.
