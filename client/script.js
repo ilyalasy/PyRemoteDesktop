@@ -1,9 +1,10 @@
 let HttpClient = function() {
     this.get = function(aUrl, aCallback) {
         let anHttpRequest = new XMLHttpRequest();
+        anHttpRequest.responseType = "arraybuffer";
         anHttpRequest.onreadystatechange = function() { 
             if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
-                aCallback(anHttpRequest.responseText);
+                aCallback(anHttpRequest.response);
         }
         anHttpRequest.open( "GET", aUrl, true );            
         anHttpRequest.send( null );
@@ -49,16 +50,14 @@ function moveHandler(event){
     console.log(`curr: ${event.clientX - rect.left} ${event.clientY - rect.top}`)
     
     client.get(`http://${host}/screenshot.png?x=${pos.x}&y=${pos.y}`, function(response){   
-        let d = new Date();
-        document.getElementById("screen").src = 'screenshot.png?' + d.getMilliseconds();
+        getScreenshot();
     });
  
 }
 
 function clickHandler(event){
     client.get(`http://${host}/screenshot.png?click=true`, function(response){
-        let d = new Date();
-        document.getElementById("screen").src = 'screenshot.png?' + d.getMilliseconds();
+        getScreenshot();
     });
 }
 
@@ -69,8 +68,7 @@ function keyHandler(event){
         key = "space";
     }
     client.get(`http://${host}/screenshot.png?key=${key}`, function(response){
-        let d = new Date();
-        document.getElementById("screen").src = 'screenshot.png?' + d.getMilliseconds();
+        getScreenshot();
     });
 }
 
@@ -85,11 +83,28 @@ function setInitSizes(){
     img.src = "/screenshot.png";
 }
 
+function getScreenshot(){
+    client.get(`http://${host}/screenshot.png`, function(response){
+        var arrayBufferView = pako.deflate(new Uint8Array( response ));
+
+        console.log("LENGTH:::");
+        console.log(arrayBufferView.byteLength);
+        var binary = '';
+        for (let i = 0; i < arrayBufferView.byteLength; i++){
+            binary += String.fromCharCode(arrayBufferView[i]);
+        }
+        screen.src = "data:image/png;base64," + btoa(binary);
+    });
+
+}
+
 window.onload = function(){
     screen = document.getElementById("screen");
+
     host = document.location.host;
     document.getElementById("h").innerText = `You are now controlling server located at: ${host}`
     setInitSizes();
-
     document.addEventListener('keydown', keyHandler)
+
+    getScreenshot();
 }
