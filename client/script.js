@@ -1,15 +1,5 @@
-let HttpClient = function() {
-    this.get = function(aUrl, aCallback) {
-        let anHttpRequest = new XMLHttpRequest();
-        anHttpRequest.responseType = "arraybuffer";
-        anHttpRequest.onreadystatechange = function() { 
-            if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
-                aCallback(anHttpRequest.response);
-        }
-        anHttpRequest.open( "GET", aUrl, true );            
-        anHttpRequest.send( null );
-    }
-}
+let screen, initWidth, initHeight, host;
+let socket;
 
 function debounce(func, wait, immediate) {
 	let timeout;
@@ -26,11 +16,10 @@ function debounce(func, wait, immediate) {
 	};
 };
 
-let client = new HttpClient();
-let deboundHandler = debounce(moveHandler, 250)
-let screen, initWidth, initHeight, host;
-
-
+function screenUpdate(){
+    let binary = reader.result;
+    screen.src = "data:image/png;base64," + btoa(binary);
+}
 
 function getMousePos(screen, event){
     let rect = screen.getBoundingClientRect(),
@@ -43,22 +32,21 @@ function getMousePos(screen, event){
     }
 }
 
+let reader = new FileReader();
+reader.onload = screenUpdate;
+
+let deboundHandler = debounce(moveHandler, 200);
+
 function moveHandler(event){
     let pos = getMousePos(screen, event);
 
-    let rect = screen.getBoundingClientRect();
-    console.log(`curr: ${event.clientX - rect.left} ${event.clientY - rect.top}`)
-    
-    client.get(`http://${host}/screenshot.png?x=${pos.x}&y=${pos.y}`, function(response){   
-        getScreenshot();
-    });
- 
+    console.log(`Sent ${pos.x} ${pos.y}`);
+    socket.send(`move ${pos.x} ${pos.y}`);
 }
 
 function clickHandler(event){
-    client.get(`http://${host}/screenshot.png?click=true`, function(response){
-        getScreenshot();
-    });
+    console.log("mouse " + event.button );
+    socket.send("mouse " + event.button );
 }
 
 
@@ -67,44 +55,33 @@ function keyHandler(event){
     if (key == " "){
         key = "space";
     }
-    client.get(`http://${host}/screenshot.png?key=${key}`, function(response){
-        getScreenshot();
-    });
+    console.log("key " + key);
+    socket.send("key " + key)
 }
 
-function setInitSizes(){
-    let img = new Image();
-    img.onload = function(){
-        console.log(`sorce: ${img.width} ${img.height}`)
-        console.log(`current: ${screen.width} ${screen.height}`)
-        initWidth = img.width;
-        initHeight = img.height;
+
+
+function messageHandler(event){
+    try {
+        reader.readAsBinaryString(event.data);
+    } catch (TypeError) {
+        let data = event.data.split(" ");
+        initWidth = data[1];
+        initHeight = data[2];
+        console.log(`Host resolution: ${initWidth}x${initHeight}`);        
     }
-    img.src = "/screenshot.png";
-}
-
-function getScreenshot(){
-    client.get(`http://${host}/screenshot.png`, function(response){
-        var arrayBufferView = pako.deflate(new Uint8Array( response ));
-
-        console.log("LENGTH:::");
-        console.log(arrayBufferView.byteLength);
-        var binary = '';
-        for (let i = 0; i < arrayBufferView.byteLength; i++){
-            binary += String.fromCharCode(arrayBufferView[i]);
-        }
-        screen.src = "data:image/png;base64," + btoa(binary);
-    });
-
 }
 
 window.onload = function(){
-    screen = document.getElementById("screen");
-
     host = document.location.host;
     document.getElementById("h").innerText = `You are now controlling server located at: ${host}`
-    setInitSizes();
-    document.addEventListener('keydown', keyHandler)
 
-    getScreenshot();
+    screen = document.getElementById("screen");
+    
+    socket = new WebSocket("ws://" + host + "/ws");
+    socket.onmessage = messageHandler;
+    
+    document.addEventListener('keydown', keyHandler);
 }
+
+
