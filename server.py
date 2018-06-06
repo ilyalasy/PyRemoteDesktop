@@ -1,7 +1,6 @@
 import datetime
 import io
 import socket
-
 import Xlib.display
 import mss
 import pyautogui
@@ -59,11 +58,10 @@ class WSHandler(tornado.websocket.WebSocketHandler):
     def on_message(self, message):
         splitted = message.split(" ")
         if splitted[0] == "key":
-            key = splitted[1].lower()
-            print("---{} pressed---".format(key))
-            pyautogui.press(key)
+            keys = splitted[1:]
+            print("---{} pressed---".format(" ".join([item for item in keys])))
+            pyautogui.hotkey(*keys)
         elif splitted[0] == "mouse":
-
             button = int(splitted[1].lower()) + 1
             print("---{} mouse button pressed ---".format(button))
             pyautogui.click(button=button)
@@ -75,6 +73,7 @@ class WSHandler(tornado.websocket.WebSocketHandler):
 
     def on_close(self):
         print('Connection closed...')
+
 
     def send_ss(self):
         self.write_message(take_ss(), binary=True)

@@ -51,10 +51,23 @@ function clickHandler(event){
 
 
 function keyHandler(event){
+    event.preventDefault();
     let key = event.key;
+    if (key.length != 1){
+        key = key.toLowerCase();
+    }
+
+    key = key.replace("arrow", "");
+    
     if (key == " "){
         key = "space";
     }
+    if (event.ctrlKey)
+        key += " ctrl";
+    if(event.shiftKey)
+        key += " shift";
+    if(event.altKey)
+        key += " alt";
     console.log("key " + key);
     socket.send("key " + key)
 }
