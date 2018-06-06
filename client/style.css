@@ -13,8 +13,6 @@
  }
 
 .center {
-    border: 15px solid black;
-    border-radius: 10px;
     display: block;
     margin: auto;
     width: 85%;
